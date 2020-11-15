@@ -120,7 +120,7 @@ template.innerHTML = `
                 <img id="volumeScreen" src="./assets/imgs/screen.png">
                 <div id="textOnScreen">
                     <p id="volumeOnScreen">Volume : 1</p>
-                    <p id="effect" class="textOnScreenRight"> Effects :<span> On</span></p>
+                    <p id="effect" class="textOnScreenRight"> Effects :<span> Off</span></p>
                     <p id="leftOnScreen">Left : 1</p>
                     <p id="effect" class="textOnScreenRight"> Effects :<span> Off</span></p>
                     <p id="rightOnScreen">Right : 1</p>
@@ -145,6 +145,7 @@ template.innerHTML = `
 
 let behaviourColor = "#FF5733";
 let startButtonState;
+let currentTimeChanged = true;
 
 let x = 0;
 let y = 0;
@@ -342,14 +343,15 @@ class MyAudioPlayer extends HTMLElement {
     }
 
     playSong() {
-        let drawCanvas = false;
+
         if (startButtonState === undefined) {
+            // On créer les listener une fois que le son à était lancer pour la première fois
             this.createCanvasRectCurrentTime();
             startButtonState = false;
-            drawCanvas = true;
+            this.clickSong.play();
         }
+
         startButtonState = !startButtonState;
-        this.clickSong.play();
         this.changePlayButton(startButtonState);
         this.audioContext.resume();
         if (!startButtonState)
@@ -358,56 +360,57 @@ class MyAudioPlayer extends HTMLElement {
             interval = setInterval(this.drawRect, 1000);
     }
 
-
     createCanvasRectCurrentTime() {
         // create canvas context
         currentTimeCanvas = this.shadowRoot.querySelector("#rectCurrentTimeCanvas");
         contextCurrentTime = currentTimeCanvas.getContext("2d");
-        /*currentTimeCanvas.addEventListener("mousedown", this.keyDownHandler, false);
-        currentTimeCanvas.addEventListener("mouseup", this.keyUpHandler, false);*/
+        currentTimeCanvas.addEventListener("mousedown", this.keyDownHandler.bind(this), true);
+
     }
 
-    keyDownHandler(e) {
+    keyDownHandler() {
         // Stop movment and resume song NOT WORKING WELL
-        console.log("test key down");
-        if (startButtonState !== undefined) {
-            clearInterval(interval);
-            startButtonState = false;
-            this.playSong();
-            interval = setInterval(this.drawRectDragAndDrop(e.clientX), 1000);
+        clearInterval(interval);
+        currentTimeChanged = false;
+        this.playSong();
+        currentTimeCanvas.addEventListener("mousemove", this.keyMoveHandler.bind(this), true);
+        currentTimeCanvas.addEventListener("mouseup", this.keyUpHandler.bind(this), true);
+    }
 
-        }
-
+    keyMoveHandler(e) {
+        interval = setInterval(this.drawRectDragAndDrop(e.clientX), 1000);
     }
 
     keyUpHandler(e) {
         // Replay movment, set current time and start song NOT WORKING WELL
-        console.log("test key up");
-        if (startButtonState !== undefined) {
-            console.log(this.audioContext);
-            this.audioContext.currentTime = e.clientX;
-            this.playSong();
-            interval = setInterval(this.drawRect, 1000);
-        }
+        clearInterval(interval);
+        this.player.currentTime = (e.clientX - 278) / 4.11;
+        x = e.clientX;
+        currentTimeCanvas.removeEventListener("mouseup", this.keyUpHandler.bind(this), true);
+        currentTimeCanvas.removeEventListener("mousemove", this.keyMoveHandler.bind(this), true);
+        currentTimeChanged = true;
+        interval = setInterval(this.drawRect, 1000);
+        this.playSong();
+
     }
 
     drawRectDragAndDrop(position) {
-        x = position;
-        console.log(x);
+        x = position - 278;
         this.drawRect();
     }
-
 
     drawRect() {
         let thisWidth = currentTimeCanvas.width;
         let thisHeight = currentTimeCanvas.height;
+        x = x > (1285.6) ? 0 : x;
         contextCurrentTime.clearRect(0, 0, thisWidth, thisHeight);
         contextCurrentTime.beginPath();
         contextCurrentTime.rect(x, y, 0.92, thisHeight);
         contextCurrentTime.fillStyle = "#FF5733";
         contextCurrentTime.fill();
         contextCurrentTime.closePath();
-        x += 0.92;
+        if (currentTimeChanged)
+            x += 0.92;
     }
 
 }
