@@ -80,10 +80,10 @@ template.innerHTML = `
     #buttonGroup {
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
+        justify-content: space-around;
         text-align: center;
-        width:250px;
-        margin: 0 auto
+        width:80%;
+        margin: 20px auto
     }
     
     .buttonTitle {
@@ -111,7 +111,7 @@ template.innerHTML = `
             <canvas height="200em" class="canvasCurrentTime" id="rectCurrentTimeCanvas"></canvas>
         </div>
         <canvas id="audioVisual" class="canvasStyle"  height="500em" width="1000em"></canvas>
-        <audio id="myPlayer" src="./assets/song/RedHotChiliPeppers-Californication.mp3" type="audio/mp3"></audio>
+        <audio id="myPlayer" src="./assets/song/RedHotChiliPeppers-Californication.mp3" type="audio/mp3" crossorigin="anonymous"></audio>
         <br>
         <div id="mixTable">
             <img id="onOffImg" src="./assets/imgs/pauseState.png" alt="onOffImage">
@@ -120,28 +120,41 @@ template.innerHTML = `
                 <img id="volumeScreen" src="./assets/imgs/screen.png">
                 <div id="textOnScreen">
                     <p id="volumeOnScreen">Volume : 1</p>
-                    <p id="effect" class="textOnScreenRight"> Effects :<span> Off</span></p>
+                    <p id="frequencyOnScreen" class="textOnScreenRight"> Frequency : 350 Hz</span></p>
                     <p id="leftOnScreen">Left : 1</p>
-                    <p id="effect" class="textOnScreenRight"> Effects :<span> Off</span></p>
+                    <p id="qOnScreen" class="textOnScreenRight">Q : 0 dB</span></p>
                     <p id="rightOnScreen">Right : 1</p>
-                    <p id="effect" class="textOnScreenRight"> Effects :<span> Off</span></p>
+                    <p id="gainOnScreen" class="textOnScreenRight">Gain : 0</p>
                     <p id="currentTimeDisplayer" class="currentTimeStyle" style="margin-top: 10%"></p>
                 </div>
             </div>
-            <button id="playButton" style="">Play</button>
+            <button id="playButton">Play</button>
             <div id="buttonGroup">
-                <div id="volumeSection">
-                    <webaudio-knob id="knobVolume" diameter="90" src="./assets/imgs/volumeButton.png" sprites="30" value=1 min="0" max="7" step=1></webaudio-knob>
-                    <p  id="volumeTitle" class="buttonTitle"> Volume</p>
-                </div>
-                <div id="balanceSection">
-                    <webaudio-knob id="knobBalance" diameter="90" src="./assets/imgs/balanceButton.png" sprites="127" value=1 min="0" max="2" step=0.1>Balance</webaudio-knob>
-                    <p id="balanceTitle" class="buttonTitle"> Balance</p>
-                </div>
-                <webaudio-knob id="knobVolumeDisplayer" diameter="90" src="./assets/imgs/volumeDisplayer.png" sprites="100" value=1 min="0" max="7" step=1>Volume Displayer</webaudio-knob>
+                    <div id="frequencySection">
+                        <webaudio-knob id="frequencySlider" src="./assets/imgs/slider.png" sprites="127" value=350 min="0" max="22050" step=1></webaudio-knob>
+                        <p id="frequencyDisplayer" class="buttonTitle"> Frequency</p>
+                    </div>
+                    <div id="qSection">
+                        <webaudio-knob id="qSlider" src="./assets/imgs/slider.png" sprites="127" value=0 min="0" max="100" step=1></webaudio-knob>
+                        <p id="qDisplayer" class="buttonTitle"> Detune</p>
+                    </div>
+                    <div id="gainSection">
+                        <webaudio-knob id="gainSlider" src="./assets/imgs/slider.png" sprites="127" value=1 min="0.0001" max="1000" step=0.01></webaudio-knob>
+                        <p id="gainSlider" class="buttonTitle"> Gain</p>
+                    </div>
+                    <div id="volumeSection">
+                        <webaudio-knob id="knobVolume" diameter="90" src="./assets/imgs/volumeButton.png" sprites="30" value=1 min="0" max="7" step=1></webaudio-knob>
+                        <p  id="volumeTitle" class="buttonTitle"> Volume</p>
+                    </div>
+                    <div id="balanceSection">
+                        <webaudio-knob id="knobBalance" diameter="90" src="./assets/imgs/balanceButton.png" sprites="127" value=1 min="0" max="2" step=0.1>Balance</webaudio-knob>
+                        <p id="balanceTitle" class="buttonTitle"> Balance</p>
+                    </div>
             </div>
         </div>
-     </div>`;
+     </div>
+     <a href="https://github.com/DSGAndre/TPLecteurAudioVideoJs"> Lien du Github</a>
+     <a href="http://miageprojet2.unice.fr/Intranet_de_Michel_Buffa/Technlogies_Web_2_-_Master_2_Miage#Vid.c3.a9os_du_cours_et_TP_du_vendredi_30.2f10.2f2020_avec_le_MBDS"> Lien du cours </a>`;
 
 let behaviourColor = "#FF5733";
 let startButtonState;
@@ -199,17 +212,50 @@ class MyAudioPlayer extends HTMLElement {
         if (!this.audioContext) {
             this.audioContext = new AudioContext();
         }
+
         this.analyser = this.audioContext.createAnalyser();
         this.analyser.fftSize = 2048;
-        let source = this.audioContext.createMediaElementSource(audioElement);
+        this.source = this.audioContext.createMediaElementSource(audioElement);
+        this.createBalancer();
         this.pannerNode = this.audioContext.createStereoPanner();
-        source.connect(this.analyser);
-        source.connect(this.pannerNode);
-        source.connect(this.audioContext.destination);
+        this.source.connect(this.analyser);
+        this.source.connect(this.pannerNode);
+        this.source.connect(this.audioContext.destination);
         this.pannerNode.connect(this.audioContext.destination);
-        this.gainNode = this.audioContext.createGain();
         this.data = new Uint8Array(this.analyser.frequencyBinCount);
         requestAnimationFrame(this.drawAnimation.bind(this));
+    }
+
+    createBalancer() {
+
+        let balancerFilterFrequencySlider = this.shadowRoot.querySelector('#frequencySlider');
+        let balancerFilterFrequencyValue = this.shadowRoot.querySelector('#frequencyOnScreen');
+        let balancerFilterDetuneSlider = this.shadowRoot.querySelector('#qSlider');
+        let balancerFilterDetuneValue = this.shadowRoot.querySelector('#qOnScreen');
+        let balancerFilterQSlider = this.shadowRoot.querySelector('#gainSlider');
+        let balancerFilterQValue = this.shadowRoot.querySelector('#gainOnScreen');
+        let filterNode = this.audioContext.createBiquadFilter();
+        let value;
+        this.source.connect(filterNode);
+        filterNode.connect(this.audioContext.destination);
+
+        balancerFilterFrequencySlider.oninput = function (evt) {
+            value = evt.target.value;
+            filterNode.frequency.value = parseFloat(value);
+            balancerFilterFrequencyValue.innerHTML = "Frequency :" + value + " Hz";
+        };
+
+        balancerFilterDetuneSlider.oninput = function (evt) {
+            value = evt.target.value;
+            filterNode.detune.value = parseFloat(value);
+            balancerFilterDetuneValue.innerHTML = "Detune :" + value + " dB";
+        };
+
+        balancerFilterQSlider.oninput = function (evt) {
+            value = evt.target.value;
+            filterNode.Q.value = parseFloat(value);
+            balancerFilterQValue.innerHTML = "Q :" + value;
+        };
     }
 
     drawAnimation() {
@@ -386,8 +432,8 @@ class MyAudioPlayer extends HTMLElement {
         clearInterval(interval);
         this.player.currentTime = (e.clientX - 278) / 4.11;
         x = e.clientX;
-        currentTimeCanvas.removeEventListener("mouseup", this.keyUpHandler.bind(this), true);
-        currentTimeCanvas.removeEventListener("mousemove", this.keyMoveHandler.bind(this), true);
+        currentTimeCanvas.removeEventListener("mouseup", this.keyUpHandler, true);
+        currentTimeCanvas.removeEventListener("mousemove", this.keyMoveHandler, true);
         currentTimeChanged = true;
         interval = setInterval(this.drawRect, 1000);
         this.playSong();
