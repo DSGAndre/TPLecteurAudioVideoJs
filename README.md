@@ -1,6 +1,8 @@
 # TPLecteurAudioVideoJs
 
-Vous pouvez trouvez les consignes ici : [tp cours ](http://miageprojet2.unice.fr/Intranet_de_Michel_Buffa/Technlogies_Web_2_-_Master_2_Miage#Vid.c3.a9os_du_cours_et_TP_du_vendredi_30.2f10.2f2020_avec_le_MBDS])
+Vous pouvez trouvez les consignes ici : [tp cours ](http://miageprojet2.unice.fr/Intranet_de_Michel_Buffa/Technlogies_Web_2_-_Master_2_Miage#Vid.c3.a9os_du_cours_et_TP_du_vendredi_30.2f10.2f2020_avec_le_MBDS)
+
+Et ici le lien ou le tp est hebergé : [vintage-lecteur-audio](https://vintage-lecteur-audio.000webhostapp.com/)
 
 ## Tâches accomplis 
 
