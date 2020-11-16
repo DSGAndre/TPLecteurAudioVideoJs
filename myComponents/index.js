@@ -419,36 +419,39 @@ class MyAudioPlayer extends HTMLElement {
         clearInterval(interval);
         currentTimeChanged = false;
         this.playSong();
-        currentTimeCanvas.addEventListener("mousemove", this.keyMoveHandler.bind(this), true);
-        currentTimeCanvas.addEventListener("mouseup", this.keyUpHandler.bind(this), true);
+        this.keyMoveHandlerFunction = this.keyMoveHandler.bind(this);
+        this.keyUpHandlerFunction = this.keyUpHandler.bind(this);
+        currentTimeCanvas.addEventListener("mousemove", this.keyMoveHandlerFunction, false);
+        currentTimeCanvas.addEventListener("mouseup", this.keyUpHandlerFunction, false);
     }
 
     keyMoveHandler(e) {
         interval = setInterval(this.drawRectDragAndDrop(e.clientX), 1000);
+        console.log("in");
     }
 
     keyUpHandler(e) {
-        // Replay movment, set current time and start song NOT WORKING WELL
+        // Removing event not working well
         clearInterval(interval);
-        this.player.currentTime = (e.clientX - 278) / 4.11;
+        currentTimeCanvas.removeEventListener("mouseup", this.keyUpHandlerFunction, false);
+        currentTimeCanvas.removeEventListener("mousemove", this.keyMoveHandlerFunction, false);
+        this.player.currentTime = (e.clientX - 268.141) / 4.11;
         x = e.clientX;
-        currentTimeCanvas.removeEventListener("mouseup", this.keyUpHandler, true);
-        currentTimeCanvas.removeEventListener("mousemove", this.keyMoveHandler, true);
         currentTimeChanged = true;
         interval = setInterval(this.drawRect, 1000);
         this.playSong();
-
     }
 
     drawRectDragAndDrop(position) {
-        x = position - 278;
+        x = position - 268.141;
         this.drawRect();
     }
 
     drawRect() {
+        console.log(x);
         let thisWidth = currentTimeCanvas.width;
         let thisHeight = currentTimeCanvas.height;
-        x = x > (1285.6) ? 0 : x;
+        x = x > (1285.700 + 268.141) ? 0 : x;
         contextCurrentTime.clearRect(0, 0, thisWidth, thisHeight);
         contextCurrentTime.beginPath();
         contextCurrentTime.rect(x, y, 0.92, thisHeight);
