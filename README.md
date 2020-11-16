@@ -19,10 +19,12 @@ Vous pouvez trouvez les consignes ici : [tp cours ](http://miageprojet2.unice.fr
 * Mise à jour de l'affichage en fonction de la balance 
 * Ajout d'un son correspondant à l'événement click sur le boutton play
 * Ajout d'un canvas qui dessine un rectangle en fonction du current time sur le wavesound de l'image
+* Ajout d'une section balancer qui permet de gérer la fréquence, le detune et le gain du son
+* Pouvoir se deplacer dans le son( changer le current time avec comme événement souris pressée souris relaché) -- BUG EN COURS ENCORE
 
 ## Tâches que j'aimerai faire
-
-* Pouvoir se deplacer dans le son( changer le current time avec comme événement souris pressée souris relaché) 
+* Héberger le site 
 * Ajouter des effets tels que la reverb, l'écho ou autres 
 * Proposer mon component nommée "mixTable" en tant que api pour les autres
 * Permettre la lecture de n'importe quel son 
+* Appliquer le le graphique du current time à n'importe quel son ( trouver une librairie qui crée le spectre du son pour nous ) 
